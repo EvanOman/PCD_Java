@@ -1,0 +1,108 @@
+= Parallel Programming Week 1
+
+== 1.1 Task Creation/Termination
+
+* Goal: Figure out which steps in a computation can be parallelized and how that parallelism can be organized
+* `ASYNC` is a marker used to indicate that a computation can be done asynchronously
+* `FINISH` marker means that all asyncs must complete before continuing
+* These two primitives allow a variety of patterns
+
+== 1.2 Tasks in Java's Fork-Join Framework
+
+* Consider the following Divide + Conquer Array Sum example:
+
+[source,java]
+----
+class ASUM 
+{
+	A, Lo, Hi, Sum;
+
+	compute()
+	{
+		if (Lo == Hi) Sum = A[Lo];
+		else if (Lo > Hi) Sum = 0;
+		else
+		{
+			Mid = (Lo + Hi) / 2;
+			L = new ASUM(A, Lo, Mid);
+			R = new ASUM(A, Mid + 1, Hi);
+
+			ASYNC {
+				L.compute()
+			}
+			R.compute();
+			FINISH {
+				Sum = L.Sum + R.Sum
+			}
+		}
+	}
+}
+----
+
+* In Java, these `ASYNC` and `FINISH` markers can be replaced with `fork` and `join` respectively
+* Running one task as `ASYNC` and then waiting for its result (like we did with `L` in the above code snippet) is a common pattern
+* In Java we can use `invokeAll` to model this behavior
+* Thus we can implement `ASYNC` and `FINISH` patterns in Java using `fork` and `join`
+
+== 1.3 Computation Graphs, Work, Span
+
+* Suppose we have a program like the one given below:
+
+[source]
+----
+S1
+FORK S2
+S3
+JOIN S2
+S4
+----
+
+* This can be represented by the following computation graph
+
+[source]
+----
+               Join 
+FORK   S2----------------
+     /                    \
+   /                       \
+S1 ---------- S3 -----------S4
+    Continue     Continue
+----
+
+* Nodes: sequential subcomputation, Edges: ordering constraint
+* Two steps can be compute in parallel if no path exists between them
+* *Data Race*: when a read or a write may have access to the same object across parallel steps
+* *Work*: sum of the weight of all nodes
+* *Span*: weighted length of the longest path
+* *Ideal Parallelism*: `work`/`span` (the bigger the better)
+
+== 1.4 Multiprocessor Scheduling, Parallel Speedup
+
+* `T_p` is defined as the execution time on `p` processors
+* A processor may schedule the nodes in a computation graph in any order (respecting ordering constrints)
+* The processor is juggling the needs of the OS along with many other programs. As such it may not give your computation graph the optimal scheduling
+* As such, the actual execution time depends on the scheduling
+* We thus have two bounds:
+** `T_1 = work` (the graph will just be executed sequentially)
+** `T_{inf} = span`  (the only delay is the longest path)
+* These bounds give us the inequality `T_{inf} <= T_p <= T_1`
+* *Speedup*: the factor of speed up, given by `T_1/T_p`
+* This factor of speedup must always be less than or equal to `p`
+* Additionally `speedup <= work/span = ideal_parallelism`
+* As such the goal for system designers is to make computation graphs where `ideal_parallelism >> p`
+* These definitions for a solid basis for comparing parallel algorithms
+
+== 1.5 Amdahl's Law
+
+* From the definitions given in the previous section we know that `speedup <= work/span` for any computation graph
+* Thus you can directly calculate the diminishing returns of adding new processors
+* However the computation graph is not always available, how can we estimate this w/o a graph?
+* Computer Scientist Gene Amdahl came up with an approximation for this situation:
+** Suppose `q` is the fraction of your code which is inherently sequential 
+** Then `speedup <= 1/q`
+* This is actually quite easy to prove:
+** If `q` is the fraction of sequential work then `span >= q * work`
+** We know from the previous section that `speedup <= work/span`
+** Thus `speedup <= work/span <= work/(work*q) = 1/q
+** Ergo `speedup <= 1/q`
+* Parallel system designers are likely to run into an Amdahl Bottleneck, mean some section of work is inherently sequential and that makes further parallelism gains unattainable
