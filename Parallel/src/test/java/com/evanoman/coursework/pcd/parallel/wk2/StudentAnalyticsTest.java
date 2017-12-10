@@ -1,4 +1,4 @@
-package com.evanoman.coursework.pcd.parallel;
+package com.evanoman.coursework.pcd.parallel.wk2;
 
 import java.util.Random;
 
