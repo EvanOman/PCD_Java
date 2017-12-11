@@ -7,8 +7,10 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    maven { url 'https://raw.github.com/habanero-maven/hjlib-maven-repo/mvn-repo-pcdp-0.0.4-SNAPSHOT/'}
 }
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile 'edu.rice.pcdp:pcdp-core:0.0.4-SNAPSHOT'
 }
