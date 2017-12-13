@@ -1,0 +1,70 @@
+= Week 2
+
+== 2.1 Futures 
+
+* A Future is a wrapper for delayed values
+* Creating a future does not block computation, calling `Future.get` will block until the Future is complete
+* `Future.get` is like a join which also wraps the value
+* Can rewrite `ASUM` using futures like so:
+
+[source,java]
+----
+FSUM1 = FUTURE {LOWER}
+FSUM2 = FUTURE {UPPER}
+SUM = FSUM1.get() + FSUM2.get()
+----
+
+* Futures are particularly useful in the context of pure functions: no side effects reduces the complexity of the program
+* Futures also allow a wider set of programs than async, finish
+
+== 2.2 Futures in Fork Join
+
+* To see Futures in action, consider the following ASUM example:
+
+[source,java]
+----
+class ASUM extends RecursiveTask
+{
+	ARR, LO, HI
+
+	compute()
+	{
+		if (LO > HI) return 0;
+		else if (LO == HI) return ARR[LO];
+		else
+		{
+			MID = (LO + HI)/2;
+			L = new ASUM(ARR, LO, MID);
+			R = new ASUM(ARR, MID + 1, HI);
+			R.fork() // Kick off future
+			return L.compute() + R.join();
+		}
+	}
+}
+----
+
+== 2.3 Memoization and Parallelism
+
+* Memoization is the process of storing input/output maps
+* This fits into futures by storing the future itself into a data structure
+* Pascal's triangle is a good example problem for this technique
+
+== 2.4 Streams
+
+* Java Streams provide an alternate way of working with collections
+* Usually employ higher order functions in map/foreach type applications
+* Built into streams is first class support for parallelism via parallel stream
+
+== 2.5 Data Races and Determinism
+
+* *Functional Determinism:* same input guarantees the same output
+* *Structural Determinism:* same input guarantees the same computational graph
+* Preferably programs would exhibit both properties
+* *Data Race:* data is being read/written or written/written in parallel
+* Write/write means that the output is non-deterministic 
+* Data Race Freedom => structural and functional determinism
+* *Benign Non-Determinism:* different outputs/graph but all outputs are acceptable
+* Example: string search may find multiple acceptable indices
+
+
+
