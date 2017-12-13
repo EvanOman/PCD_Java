@@ -85,24 +85,24 @@ S1 ---------- S3 -----------S4
 * We thus have two bounds:
 ** `T_1 = work` (the graph will just be executed sequentially)
 ** `T_{inf} = span`  (the only delay is the longest path)
-* These bounds give us the inequality `T_{inf} <= T_p <= T_1`
+* These bounds give us the inequality `+++T_{inf} <= T_p <= T_1+++`
 * *Speedup*: the factor of speed up, given by `T_1/T_p`
 * This factor of speedup must always be less than or equal to `p`
-* Additionally `speedup <= work/span = ideal_parallelism`
+* Additionally `+++speedup <= work/span = ideal_parallelism+++`
 * As such the goal for system designers is to make computation graphs where `ideal_parallelism >> p`
 * These definitions for a solid basis for comparing parallel algorithms
 
 == 1.5 Amdahl's Law
 
-* From the definitions given in the previous section we know that `speedup <= work/span` for any computation graph
+* From the definitions given in the previous section we know that `+++speedup <= work/span+++` for any computation graph
 * Thus you can directly calculate the diminishing returns of adding new processors
 * However the computation graph is not always available, how can we estimate this w/o a graph?
 * Computer Scientist Gene Amdahl came up with an approximation for this situation:
 ** Suppose `q` is the fraction of your code which is inherently sequential 
-** Then `speedup <= 1/q`
+** Then `+++speedup <= 1/q+++`
 * This is actually quite easy to prove:
-** If `q` is the fraction of sequential work then `span >= q * work`
-** We know from the previous section that `speedup <= work/span`
-** Thus `speedup <= work/span <= work/(work*q) = 1/q
-** Ergo `speedup <= 1/q`
+** If `q` is the fraction of sequential work then `+++span >= q * work+++`
+** We know from the previous section that `+++speedup <= work/span+++`
+** Thus `+++speedup <= work/span <= work/(work*q) = 1/q+++`
+** Ergo `++speedup <= 1/q+++`
 * Parallel system designers are likely to run into an Amdahl Bottleneck, mean some section of work is inherently sequential and that makes further parallelism gains unattainable
